@@ -1,5 +1,10 @@
+const express = require('express');
+const knex = require('knex')
+
+const knexfile = require('../knexfile')
+
 const router = require('express').Router();
-const db = require('../data/db-config.js');
+const db = knex(knexfile.development);
 
 
 db.on('query', (toSqlObject) => {
@@ -22,7 +27,7 @@ try {
   res.json(cars)
 } catch (err) {
   console.log(err)
-  res.status(500).json({ message: "Server error" })
+  res.status(500).json({ message: "Server error"})
 }
 });
 
@@ -42,14 +47,18 @@ router.get('/:id', (req, res) => {
 router.post('/', async (req, res) => {
   const carData = req.body;
 
-  try {
+    try {
       const car = await db.insert(carData).into('car-dealer')
-      res.status(201).json(car-dealer)
-  } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "our bad! couldn't add car-dealer"})
-  }
-  // if (validateCar(req.bod)) {
+      res.status(201).json({ message: `You created an entry with the id: ${car}.` })
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "Can't POST. Check VIN #", error: err})
+    }
+
+  })
+
+  // router.post('/', (req, res) => {
+  //     if (validateCar(req.bod)) {
   //     db('car-dealer')
   //         .insert(req.body, 'id')
   //         .then(([id]) => id)
@@ -57,13 +66,28 @@ router.post('/', async (req, res) => {
   //             db('car-dealer')
   //                 .where({ id })
   //                 .first()
-  //                 .then(car-dealer => {
+  //                 .then(car => {
   //                     res.status(201).json(car-dealer)
   //                 })
   //         })
 
   // }
-})
+  // })
+  
+  // db('car-dealer').insert(carData)
+  //   .then(car => {
+  //     db('car-dealer').where({  })
+  //     .then(newCarData => {
+  //       res.status(201).json(newCarData)
+  //     })
+  //   })
+  //   .catch(err => {
+  //     console.log('Entry error', err);
+  //     res.status(500).json ({ message: "Failed to store data", error: err })
+  //   })
+
+
+
 
 router.put('/:id', (req, res) => {
   const { id } = req.params;
@@ -74,7 +98,7 @@ router.put('/:id', (req, res) => {
       .update(changes)
       .then(update => {
           if (update) {
-              res.status(200).json({ updated: `You updated ${update} car-dealer.`})
+              res.status(200).json({ updated: `You updated ${update} car-dealer.` })
           } else {
               res.status(404).json ({ message: 'invalid id' })
           }
@@ -98,11 +122,6 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
-
-
-function validateCar({ name, VIN }) {
-  return name && typeof VIN == 'number' && VIN == 17;
-}
 
 
 
